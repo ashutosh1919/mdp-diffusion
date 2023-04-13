@@ -13,13 +13,15 @@ from mdp.models import (
     MDPEpsilon,
     MDPCondition,
     MDPX,
+    MDPBeta,
     NullInversion
 )
 
 sampler_model_mapping: Dict[str, Any] = {
     'mdp_epsilon': MDPEpsilon,
     'mdp_condition': MDPCondition,
-    'mdp_x': MDPX
+    'mdp_x': MDPX,
+    'mdp_beta': MDPBeta
 }
 
 

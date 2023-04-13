@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 from torch import autocast
 
 
-class MDPX(ImageSampler):
+class MDPBeta(ImageSampler):
     def __init__(self,
                  unet: Any,
                  vae: Any,
@@ -24,7 +24,7 @@ class MDPX(ImageSampler):
                  device: Optional[torch.device] = None,
                  **kwargs):
         """
-        This class defines the image sampling using mdp_x
+        This class defines the image sampling using mdp_beta
         technique. For more information, please look at the appendix of
         the paper https://arxiv.org/abs/2303.16765
 
@@ -76,12 +76,12 @@ class MDPX(ImageSampler):
         # print(self.kwargs)
         if self.prompt_text == "":
             raise ValueError(
-                "prompt_text must not be None for MDPX")
+                "prompt_text must not be None for MDPBeta")
         if 'amplify' not in self.kwargs:
             self.kwargs['amplify'] = 1
             print("WARN: Ineteger param amplify is set to 1.")
-        if 'rec_noise_latents' not in self.kwargs:
-            raise ValueError("List param rec_noise_latents must be passed.")
+        if 'rec_noise_embs' not in self.kwargs:
+            raise ValueError("List param rec_noise_embs must be passed.")
         if 'linear_factor_list' not in self.kwargs:
             self.kwargs['linear_factor_list'] = None
         if 'linear_factor' not in self.kwargs:
@@ -109,9 +109,28 @@ class MDPX(ImageSampler):
             else:
                 all_embeddings = torch.cat(
                     [uncond_embeddings, text_embeddings], dim=0)
-            noise_pred = self.unet(latent_model_input,
-                                   timestep,
-                                   encoder_hidden_states=all_embeddings).sample
+
+            noise_pred_org = self.unet(
+                latent_model_input,
+                timestep,
+                encoder_hidden_states=all_embeddings
+            ).sample
+            noise_pred_edit = self.unet(
+                latent_model_input,
+                timestep, encoder_hidden_states=self.kwargs[
+                    "rec_noise_embs"][index]
+            ).sample
+
+            if self.kwargs["linear_factor_list"] is None:
+                noise_pred = self.kwargs["linear_factor"] * self.kwargs[
+                    "amplify"] * noise_pred_edit + \
+                    (1 - self.kwargs["linear_factor"]) * noise_pred_org
+            else:
+                noise_pred = self.kwargs["linear_factor_list"][index] * \
+                    self.kwargs["amplify"] * \
+                    noise_pred_edit \
+                    + (1 - self.kwargs["linear_factor_list"][index]) * \
+                    noise_pred_org
 
             # perform guidance
             if self.enable_classifier_free_guidance:
@@ -123,14 +142,4 @@ class MDPX(ImageSampler):
                                           timestep,
                                           self.latent,
                                           eta=self.eta).prev_sample
-        if self.kwargs["linear_factor_list"] is None:
-            self.latent = self.kwargs["linear_factor"] * self.kwargs[
-                "amplify"] * self.kwargs["rec_noise_latents"][index] + \
-                (1 - self.kwargs["linear_factor"]) * self.latent
-        else:
-            self.latent = self.kwargs["linear_factor_list"][index] * \
-                self.kwargs["amplify"] * \
-                self.kwargs["rec_noise_latents"][index] \
-                + (1 - self.kwargs["linear_factor_list"][index]) * \
-                self.latent
         return noise_pred, self.latent, all_embeddings

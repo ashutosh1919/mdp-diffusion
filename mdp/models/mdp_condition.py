@@ -76,7 +76,7 @@ class MDPCondition(ImageSampler):
         # print(self.kwargs)
         if self.prompt_text == "":
             raise ValueError(
-                "prompt_text must not be None for MDPEpsilon")
+                "prompt_text must not be None for MDPCondition")
         if 'amplify' not in self.kwargs:
             self.kwargs['amplify'] = 1
             print("WARN: Ineteger param amplify is set to 1.")

@@ -4,9 +4,9 @@ Pillow
 types-Pillow
 pycodestyle
 mypy
+pytorch-transformers
 diffusers==0.10.0
 transformers==4.25.1
-pytorch-transformers
 tqdm
 accelerate
 gradio

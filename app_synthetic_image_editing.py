@@ -34,7 +34,7 @@ def synthetic_image_editing(
 app_inputs = [
     gr.Dropdown(
         label="Algorithm Type",
-        choices=['mdp_epsilon', 'mdp_condition', 'mdp_x'],
+        choices=['mdp_epsilon', 'mdp_condition', 'mdp_x', 'mdp_beta'],
         value='mdp_epsilon'
     ),
     gr.Textbox(
@@ -85,7 +85,7 @@ demo = gr.Interface(
     fn=synthetic_image_editing,
     inputs=app_inputs,
     outputs=app_outputs,
-    title="Modifying Diffusion Path: Synthetic Image Editing"
+    title="Modifying Diffusion Path (MDP): Synthetic Image Editing"
 )
 
 demo.queue()

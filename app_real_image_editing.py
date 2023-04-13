@@ -35,7 +35,7 @@ app_inputs = [
     gr.Image(label="Input Image"),
     gr.Dropdown(
         label="Algorithm Type",
-        choices=['mdp_epsilon', 'mdp_condition', 'mdp_x'],
+        choices=['mdp_epsilon', 'mdp_condition', 'mdp_x', 'mdp_beta'],
         value='mdp_epsilon'
     ),
     gr.Textbox(
@@ -81,7 +81,7 @@ demo = gr.Interface(
     fn=real_image_editing,
     inputs=app_inputs,
     outputs=app_outputs,
-    title="Modifying Diffusion Path: Real Image Editing"
+    title="Modifying Diffusion Path (MDP): Real Image Editing"
 )
 
 demo.queue()
