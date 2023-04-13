@@ -1,0 +1,12 @@
+numpy
+matplotlib
+Pillow
+types-Pillow
+pycodestyle
+mypy
+diffusers==0.10.0
+transformers==4.25.1
+pytorch-transformers
+tqdm
+accelerate
+gradio
