@@ -36,7 +36,7 @@ gradio app_real_image_editing.py
 
 Once you run the above command, gradio app will generate a link which you can open to launch app. Below GIF shows the how you can interact with the app.
 
-![](https://github.com/ashutosh1919/mdp-diffusion/blob/main/images/real_image_editing.gif)
+![](./images/real_image_editing.gif)
 
 ### Synthetic-Image Editing
 
@@ -49,7 +49,7 @@ gradio app_synthetic_image_editing.py
 
 Once you run the above command, gradio app will generate a link which you can open to launch app. Below GIF shows the how you can interact with the app.
 
-![](https://github.com/ashutosh1919/mdp-diffusion/blob/main/images/synthetic_image_editing.gif)
+![](./images/synthetic_image_editing.gif)
 
 
 ## Reference
