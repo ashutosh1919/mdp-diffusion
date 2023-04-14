@@ -138,7 +138,9 @@ class MDP:
                 sampler_type))
         sampler_cls = sampler_model_mapping[sampler_type]
 
-        null_inversion = NullInversion(self.model)
+        null_inversion = NullInversion(self.model,
+                                       num_infer_steps=num_infer_steps,
+                                       guidance_scale=guidance_scale)
         ((image_gt, image_enc),
          ddim_latents,
          uncond_embeddings) = null_inversion.invert(img_path,

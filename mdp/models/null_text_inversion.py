@@ -15,12 +15,11 @@ from PIL import Image
 from mdp.utils import load_512
 
 
-NUM_DDIM_STEPS = 50
-GUIDANCE_SCALE = 7.5
-
-
 class NullInversion:
-    def __init__(self, model: Any):
+    def __init__(self,
+                 model: Any,
+                 num_infer_steps: int = 50,
+                 guidance_scale: float = 7.5):
         """
         This class applies Null Inversion process over the image for MDP.
         It means that it is responsible for producing initial noise from the
@@ -33,7 +32,9 @@ class NullInversion:
                                   set_alpha_to_one=False)
         self.model = model
         self.tokenizer = self.model.tokenizer
-        self.model.scheduler.set_timesteps(NUM_DDIM_STEPS)
+        self.num_infer_steps = num_infer_steps
+        self.guidance_scale = guidance_scale
+        self.model.scheduler.set_timesteps(self.num_infer_steps)
         self.prompt: Optional[str] = None
         self.context: Optional[torch.Tensor] = None
 
@@ -129,7 +130,7 @@ class NullInversion:
         latents_input = torch.cat([latents] * 2)
         if context is None:
             context = self.context
-        guidance_scale = 1 if is_forward else GUIDANCE_SCALE
+        guidance_scale = 1 if is_forward else self.guidance_scale
         noise_pred = self.model.unet(latents_input,
                                      t,
                                      encoder_hidden_states=context)["sample"]
@@ -192,7 +193,7 @@ class NullInversion:
         uncond_embeddings, cond_embeddings = self.context.chunk(2)
         all_latent = [latent]
         latent = latent.clone().detach()
-        for i in range(NUM_DDIM_STEPS):
+        for i in range(self.num_infer_steps):
             t = self.model.scheduler.timesteps[
                 len(self.model.scheduler.timesteps) - i - 1
             ]
@@ -224,8 +225,8 @@ class NullInversion:
         uncond_embeddings, cond_embeddings = self.context.chunk(2)
         uncond_embeddings_list = []
         latent_cur = latents[-1]
-        bar = tqdm(total=num_inner_steps * NUM_DDIM_STEPS)
-        for i in range(NUM_DDIM_STEPS):
+        bar = tqdm(total=num_inner_steps * self.num_infer_steps)
+        for i in range(self.num_infer_steps):
             uncond_embeddings = uncond_embeddings.clone().detach()
             uncond_embeddings.requires_grad = True
             optimizer = Adam([uncond_embeddings], lr=1e-2 * (1. - i / 100.))
@@ -240,7 +241,7 @@ class NullInversion:
                     latent_cur,
                     t,
                     uncond_embeddings)
-                noise_pred = (noise_pred_uncond + GUIDANCE_SCALE *
+                noise_pred = (noise_pred_uncond + self.guidance_scale *
                               (noise_pred_cond - noise_pred_uncond))
                 latents_prev_rec = self.prev_step(noise_pred, t, latent_cur)
                 loss = nnf.mse_loss(latents_prev_rec, latent_prev)
